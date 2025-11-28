@@ -1,89 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
 <meta charset="utf-8">
-<title>Upload ke Google Drive</title>
-<style>
-  body { background:#000; color:#0f0; font-family:monospace; text-align:center; padding:40px; }
-  button { padding:12px 25px; font-size:18px; background:#0f0; color:#000; border:0; cursor:pointer; }
-  input[type=file]{ margin:20px; }
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>UPLOAD — Google Drive</title>
 
-  #bar {
-    width:300px;
-    height:10px;
-    background:#033;
-    margin:20px auto;
-    border-radius:5px;
-    overflow:hidden;
-    display:none;
+<style>
+  :root{
+    --bg:#000;
+    --card:#0b0b0b;
+    --accent:#00ff8c;
+    --border:#1a1a1a;
+    --text:#eaeaea;
+    --muted:#7d7d7d;
   }
-  #progress {
-    height:100%;
-    width:0%;
-    background:#0f0;
+  body{
+    margin:0;
+    background:var(--bg);
+    font-family: "Inter", sans-serif;
+    color:var(--text);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
   }
+
+  .box{
+    width:95%; max-width:850px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:30px;
+    box-shadow:0 0 40px rgba(0,0,0,0.6);
+    animation: fade .6s ease;
+  }
+
+  @keyframes fade{
+    from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}
+  }
+
+  h1{
+    margin:0;
+    font-size:26px;
+    color:var(--accent);
+    font-weight:700;
+    margin-bottom:10px;
+    letter-spacing:1px;
+  }
+
+  .dropzone{
+    margin-top:20px;
+    border:2px dashed var(--border);
+    border-radius:14px;
+    padding:50px 20px;
+    text-align:center;
+    color:var(--muted);
+    transition:.2s;
+    cursor:pointer;
+  }
+  .dropzone.drag{
+    border-color:var(--accent);
+    color:var(--accent);
+    background:#001a11;
+  }
+
+  input[type=file]{display:none;}
+
+  .btn{
+    margin-top:18px;
+    background:var(--accent);
+    color:#000;
+    border:0;
+    padding:12px 22px;
+    font-size:17px;
+    font-weight:700;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.2s;
+  }
+  .btn:hover{
+    opacity:.8;
+  }
+
+  .file-list{
+    margin-top:20px;
+    background:#050505;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:15px;
+  }
+
+  .file-item{
+    display:flex;
+    justify-content:space-between;
+    background:#0a0a0a;
+    padding:10px 14px;
+    border-radius:8px;
+    margin-bottom:8px;
+    border:1px solid #111;
+  }
+
+  .small{color:var(--muted); font-size:13px;}
+
 </style>
 </head>
 <body>
 
-<h2>UPLOAD KE GOOGLE DRIVE</h2>
+<div class="box">
+  <h1>UPLOAD FILE</h1>
+  <p class="small">Unggah file Anda ke Google Drive</p>
 
-<input type="file" id="fileInput">
-<button onclick="upload()">Upload</button>
+  <label class="dropzone" id="drop">
+    <div id="dropText">Tarik & Lepaskan File<br>atau Klik di sini</div>
+    <input id="fileInput" type="file" multiple>
+  </label>
 
-<div id="bar"><div id="progress"></div></div>
+  <div id="filesBox" class="file-list" style="display:none;"></div>
 
-<p id="status"></p>
+  <button class="btn" id="uploadBtn">UPLOAD</button>
+</div>
 
 <script>
-const WEBAPP_URL = "PASTE_WEB_APP_URL_KAMU";
+let files = [];
+const drop = document.getElementById("drop");
+const fileInput = document.getElementById("fileInput");
+const filesBox = document.getElementById("filesBox");
+const uploadBtn = document.getElementById("uploadBtn");
+const dropText = document.getElementById("dropText");
 
-function animateProgress() {
-  let p = 0;
-  const bar = document.getElementById("bar");
-  const pr = document.getElementById("progress");
-  bar.style.display = "block";
+// Klik dropzone
+ drop.addEventListener("click", () => fileInput.click());
 
-  const timer = setInterval(() => {
-    p += 2;
-    if (p >= 95) { clearInterval(timer); }
-    pr.style.width = p + "%";
-  }, 50);
+// File input
+fileInput.addEventListener("change", ()=>{
+  [...fileInput.files].forEach(f=>files.push(f));
+  render();
+});
+
+// Drag enter
+["dragenter","dragover"].forEach(evt=>{
+  drop.addEventListener(evt, e=>{e.preventDefault(); drop.classList.add("drag");});
+});
+
+// Drag leave
+["dragleave","drop"].forEach(evt=>{
+  drop.addEventListener(evt, e=>{e.preventDefault(); drop.classList.remove("drag");});
+});
+
+// Drop
+ drop.addEventListener("drop", e=>{
+  [...e.dataTransfer.files].forEach(f=>files.push(f));
+  render();
+});
+
+function render(){
+  if(files.length === 0){ filesBox.style.display="none"; return; }
+
+  filesBox.style.display = "block";
+  filesBox.innerHTML = "";
+  files.forEach(f=>{
+    const div = document.createElement("div");
+    div.className = "file-item";
+    div.innerHTML = `<span>${f.name}</span><span class='small'>${(f.size/1024).toFixed(1)} KB</span>`;
+    filesBox.appendChild(div);
+  });
 }
 
-async function upload(){
-  const file = document.getElementById("fileInput").files[0];
-  if(!file) return alert("Pilih file dulu!");
-
-  animateProgress();
-
-  const reader = new FileReader();
-  reader.onloadend = async () => {
-    const base64 = reader.result.split(",")[1];
-
-    const form = new URLSearchParams();
-    form.append("name", file.name);
-    form.append("type", file.type);
-    form.append("file", base64);
-
-    document.getElementById("status").innerText = "Uploading...";
-
-    const res = await fetch(WEBAPP_URL, { method:"POST", body: form });
-    const result = await res.json();
-
-    document.getElementById("progress").style.width = "100%";
-
-    if(result.status === "success"){
-      document.getElementById("status").innerHTML =
-        "✔ Uploaded: <a href='" + result.fileUrl + "' target='_blank'>Buka File</a>";
-    } else {
-      document.getElementById("status").innerText = "❌ Error: " + result.message;
-    }
-  };
-
-  reader.readAsDataURL(file);
-}
 </script>
-
 </body>
 </html>
