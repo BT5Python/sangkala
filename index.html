@@ -1,90 +1,196 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<title>Upload ke Google Drive</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Upload ke Google Drive — GitHub Pages</title>
 
-<style>
-  body{
-    background:#000;
-    color:#fff;
-    font-family:Arial;
-    padding:20px;
-  }
-  .card{
-    max-width:500px;
-    margin:auto;
-    background:#111;
-    padding:20px;
-    border-radius:10px;
-    border:1px solid #222;
-  }
-  button, input{
-    padding:10px;
-    border-radius:6px;
-    border:none;
-    margin-top:10px;
-  }
-  input{
-    background:#222;
-    color:#fff;
-    width:100%;
-  }
-  button{
-    background:#1db954;
-    color:#000;
-    font-weight:bold;
-    width:100%;
-    cursor:pointer;
-  }
-</style>
+  <style>
+    :root{ --bg:#000; --accent:#1db954; --muted:#9aa0a6; --glass: rgba(255,255,255,0.03); }
+    *{box-sizing:border-box}
+    html,body{
+      height:100%; margin:0;
+      font-family:Inter, sans-serif;
+      background:linear-gradient(180deg,#000,#050505);
+      color:#e6eef3;
+    }
+
+    .wrap{
+      min-height:100%;
+      display:flex; align-items:center; justify-content:center;
+      padding:40px;
+    }
+
+    .card{
+      width:100%; max-width:900px;
+      background:var(--glass);
+      border:1px solid rgba(255,255,255,0.05);
+      border-radius:14px;
+      padding:26px;
+      box-shadow:0 6px 30px rgba(0,0,0,0.6);
+    }
+
+    header{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+    .logo{
+      width:48px;height:48px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      background:#0d0d0d;border:1px solid rgba(255,255,255,0.05);
+    }
+    .logo b{color:var(--accent);font-size:20px}
+
+    h1{margin:0;font-size:20px}
+
+    .uploader{
+      display:grid;grid-template-columns:1fr 300px; gap:20px;
+    }
+    @media(max-width:850px){ .uploader{grid-template-columns:1fr;} }
+
+    .drop{
+      background:rgba(255,255,255,0.03);
+      border-radius:10px;
+      border:1px dashed rgba(255,255,255,0.08);
+      padding:22px; min-height:220px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      transition:.2s; cursor:pointer;
+    }
+    .drop.dragover{ border-color:var(--accent); transform:translateY(-4px); }
+
+    .hint{color:var(--muted);text-align:center;margin-top:8px;}
+    .controls{display:flex;gap:10px;margin-top:10px}
+    .btn{
+      padding:10px 14px; border-radius:8px;
+      background:transparent; border:1px solid rgba(255,255,255,0.06);
+      color:#e6eef3; cursor:pointer; font-weight:600;
+    }
+    .btn.primary{
+      background:linear-gradient(90deg,rgba(29,185,84,0.2),rgba(29,185,84,0.1));
+      border-color:rgba(29,185,84,0.25);
+    }
+
+    input[type=file]{display:none;}
+    .side{
+      background:rgba(255,255,255,0.02);
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.05);
+      padding:16px;
+    }
+
+    .file-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+    .file-item{
+      padding:8px; border-radius:8px;
+      background:rgba(0,0,0,0.2);
+      border:1px solid rgba(255,255,255,0.03);
+      display:flex; justify-content:space-between; align-items:center;
+    }
+
+    .small{font-size:12px;color:var(--muted);}
+    footer{ margin-top:16px;display:flex;justify-content:space-between;align-items:center;color:var(--muted); font-size:13px; }
+
+  </style>
 </head>
 <body>
 
-<div class="card">
-  <h2>Upload File ke Google Drive</h2>
+<div class="wrap">
+  <div class="card">
 
-  <!-- FORM TANPA FETCH — 100% WORK -->
-  <form id="uploadForm" method="POST" target="hiddenFrame">
-    <input type="hidden" id="file64" name="file">
-    <input type="hidden" id="filename" name="filename">
+    <header>
+      <div class="logo"><b>UP</b></div>
+      <div>
+        <h1>Upload ke Google Drive (Apps Script)</h1>
+        <p class="small">Upload otomatis ke folder Google Drive milik Anda.</p>
+      </div>
+    </header>
 
-    <input type="file" id="theFile" required>
-    <button type="submit">UPLOAD</button>
-  </form>
+    <section class="uploader">
+      <div>
+        <div id="drop" class="drop">
+          <svg width="64" height="64" fill="none" stroke="currentColor">
+            <path d="M12 3v10" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M8 7l4-4 4 4" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M21 15v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2"
+                  stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
 
-  <p id="status"></p>
+          <div class="hint">
+            <div style="font-weight:700">Tarik & lepaskan file di sini</div>
+            <div class="small">atau gunakan tombol di bawah</div>
 
-  <!-- Iframe untuk menampung respon -->
-  <iframe name="hiddenFrame" style="display:none;"></iframe>
+            <div class="controls">
+              <label class="btn primary" for="fileInput">Pilih File</label>
+              <button class="btn" id="clearBtn">Bersihkan</button>
+              <input id="fileInput" type="file" multiple>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="side">
+        <strong>File dipilih</strong>
+        <p class="small">Daftar file yang akan diupload.</p>
+
+        <ul id="fileList" class="file-list"></ul>
+
+        <footer>
+          <span id="count">0 file</span>
+          <button id="uploadBtn" class="btn primary">Upload</button>
+        </footer>
+      </aside>
+    </section>
+
+    <!-- FORM UPLOAD KE APPS SCRIPT (tidak terlihat) -->
+    <form id="realForm" action="GANTI_WEBAPP_URL" method="POST" enctype="multipart/form-data" style="display:none;">
+      <input id="realInput" type="file" name="file" multiple>
+    </form>
+
+  </div>
 </div>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzRu7J0zWHlPQ0ZxkJflM5v52PVoGNrVhanbu1eSUENuBNvzsawU02cwTGs5_dXSBPb8A/exec";   // GANTI !!
+let files = [];
+const fileInput = document.getElementById("fileInput");
+const realInput = document.getElementById("realInput");
+const realForm = document.getElementById("realForm");
+const fileList = document.getElementById("fileList");
+const uploadBtn = document.getElementById("uploadBtn");
+const count = document.getElementById("count");
+const drop = document.getElementById("drop");
+const clearBtn = document.getElementById("clearBtn");
 
-// SET action form
-document.getElementById("uploadForm").action = WEBAPP_URL;
+function renderList(){
+  fileList.innerHTML = "";
+  files.forEach((f,i)=>{
+    let li = document.createElement("li");
+    li.className = "file-item";
+    li.innerHTML = `
+      <div>${f.name} <div class="small">${(f.size/1024).toFixed(1)} KB</div></div>
+      <button class="btn" onclick="removeFile(${i})">Hapus</button>
+    `;
+    fileList.appendChild(li);
+  });
+  count.textContent = files.length + " file";
+}
 
-document.getElementById("uploadForm").onsubmit = function(e){
-  const file = document.getElementById("theFile").files[0];
-  if(!file){
-    alert("Pilih file dulu.");
-    return false;
-  }
+function removeFile(i){ files.splice(i,1); renderList(); }
+clearBtn.onclick = ()=>{ files=[]; renderList(); }
 
-  const reader = new FileReader();
+fileInput.onchange = ()=>{ [...fileInput.files].forEach(f=>files.push(f)); renderList(); };
 
-  reader.onloadend = () => {
-    const base64 = reader.result.split(",")[1];
+drop.onclick = e=>{ if(e.target===drop) fileInput.click(); };
+["dragenter","dragover"].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add("dragover");}));
+["dragleave","drop"].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove("dragover");}));
+drop.addEventListener("drop", e=>{ [...e.dataTransfer.files].forEach(f=>files.push(f)); renderList(); });
 
-    document.getElementById("file64").value = base64;
-    document.getElementById("filename").value = file.name;
-
-    document.getElementById("status").innerText = "Mengupload...";
-  };
-
-  reader.readAsDataURL(file);
+uploadBtn.onclick = ()=>{
+  if(files.length===0){ alert("Belum ada file"); return; }
+  realInput.files = new FileListItems(files);
+  realForm.submit();
 };
+
+function FileListItems(files){
+  let dt = new DataTransfer();
+  files.forEach(f => dt.items.add(f));
+  return dt.files;
+}
 </script>
 
 </body>
