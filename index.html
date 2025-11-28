@@ -211,7 +211,7 @@ function toBase64(file) {
     reader.onload = () => resolve(reader.result);
     reader.onerror = error => reject(error);
   });
-
+}
 drop.addEventListener("click", e => {
   if (e.target === drop) fileInput.click();
 });
