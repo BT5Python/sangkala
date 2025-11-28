@@ -239,30 +239,45 @@ uploadBtn.addEventListener("click", uploadFiles);
 
 async function uploadFiles(){
   if(files.length === 0){
-    alert("Belum ada file."); return;
+    alert("Belum ada file."); 
+    return;
   }
 
-  for(const file of files){
-    const reader = new FileReader();
+  for (const file of files) {
+    const base64 = await toBase64(file);
 
-    reader.onloadend = async () => {
-      const base64 = reader.result.split(",")[1];
+    const form = new URLSearchParams();
+    form.append("name", file.name);
+    form.append("type", file.type);
+    form.append("file", base64);
 
-      const form = new URLSearchParams();
-      form.append("name", file.name);
-      form.append("type", file.type);
-      form.append("file", base64);
+    const res = await fetch(WEBAPP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: form
+    });
 
-      const res = await fetch(WEBAPP_URL, { method:"POST", body:form });
-      const result = await res.json();
-      console.log(result);
-    };
+    const result = await res.json();
+    console.log(result);
 
-    reader.readAsDataURL(file);
+    if (result.status !== "success") {
+      alert("Gagal upload: " + result.message);
+      return;
+    }
   }
 
-  alert("Upload selesai! Cek Google Drive Anda.");
+  alert("Upload berhasil! Cek Google Drive.");
 }
+
+// helper
+function toBase64(file){
+  return new Promise((resolve) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result.split(",")[1]);
+    r.readAsDataURL(file);
+  });
+}
+
 </script>
 
 </body>
