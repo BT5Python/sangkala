@@ -1,139 +1,234 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="id">
 <head>
-<meta charset="utf-8">
-<title>Upload ke Google Drive</title>
-<style>
-  body {
-    background:#000;
-    color:#00ff00;
-    font-family: "Courier New", monospace;
-    text-align:center;
-    padding:40px;
-  }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Upload ke Google Drive — GitHub Pages</title>
 
-  h2 {
-    letter-spacing:2px;
-    text-shadow:0 0 10px #00ff00;
-  }
+  <style>
+    :root{ --bg:#000; --accent:#1db954; --muted:#9aa0a6; --glass: rgba(255,255,255,0.03); }
+    *{box-sizing:border-box}
+    html,body{
+      height:100%; margin:0;
+      font-family:Inter, sans-serif;
+      background:linear-gradient(180deg,#000,#050505);
+      color:#e6eef3;
+    }
 
-  .upload-box {
-    border:1px solid #00ff00;
-    display:inline-block;
-    padding:25px 40px;
-    margin-top:20px;
-    border-radius:10px;
-    background:rgba(0,255,0,0.05);
-  }
+    .wrap{
+      min-height:100%;
+      display:flex; align-items:center; justify-content:center;
+      padding:40px;
+    }
 
-  input[type=file]{
-    margin:20px;
-    color:#0f0;
-  }
+    .card{
+      width:100%; max-width:900px;
+      background:var(--glass);
+      border:1px solid rgba(255,255,255,0.05);
+      border-radius:14px;
+      padding:26px;
+      box-shadow:0 6px 30px rgba(0,0,0,0.6);
+    }
 
-  button {
-    padding:12px 28px;
-    font-size:18px;
-    background:#00ff00;
-    color:#000;
-    border:0;
-    cursor:pointer;
-    font-weight:bold;
-    border-radius:5px;
-  }
+    header{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+    .logo{
+      width:48px;height:48px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      background:#0d0d0d;border:1px solid rgba(255,255,255,0.05);
+    }
+    .logo b{color:var(--accent);font-size:20px}
+    h1{margin:0;font-size:20px}
 
-  /* Progress bar */
-  #progressContainer {
-    width:80%;
-    height:18px;
-    border:1px solid #00ff00;
-    margin:20px auto;
-    display:none;
-  }
+    .uploader{
+      display:grid;grid-template-columns:1fr 300px; gap:20px;
+    }
+    @media(max-width:850px){ .uploader{grid-template-columns:1fr;} }
 
-  #progressBar {
-    height:100%;
-    width:0%;
-    background:#00ff00;
-    box-shadow:0 0 10px #00ff00;
-  }
+    .drop{
+      background:rgba(255,255,255,0.03);
+      border-radius:10px;
+      border:1px dashed rgba(255,255,255,0.08);
+      padding:22px; min-height:220px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      transition:.2s;
+      cursor:pointer;
+    }
+    .drop.dragover{ border-color:var(--accent); transform:translateY(-4px); }
 
-  #status {
-    margin-top:15px;
-    font-size:18px;
-  }
-</style>
+    .hint{color:var(--muted);text-align:center;margin-top:8px;}
+    .controls{display:flex;gap:10px;margin-top:10px}
+    .btn{
+      padding:10px 14px; border-radius:8px;
+      background:transparent; border:1px solid rgba(255,255,255,0.06);
+      color:#e6eef3; cursor:pointer; font-weight:600;
+    }
+    .btn.primary{
+      background:linear-gradient(90deg,rgba(29,185,84,0.2),rgba(29,185,84,0.1));
+      border-color:rgba(29,185,84,0.25);
+    }
+    input[type=file]{display:none;}
+
+    .side{
+      background:rgba(255,255,255,0.02);
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.05);
+      padding:16px;
+    }
+    .file-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+    .file-item{
+      padding:8px; border-radius:8px;
+      background:rgba(0,0,0,0.2);
+      border:1px solid rgba(255,255,255,0.03);
+      display:flex; justify-content:space-between;
+      align-items:center;
+    }
+    .small{font-size:12px;color:var(--muted);}
+
+    footer{
+      margin-top:16px;
+      display:flex;justify-content:space-between;align-items:center;
+      color:var(--muted); font-size:13px;
+    }
+
+  </style>
 </head>
 <body>
 
-<h2>UPLOAD KE GOOGLE DRIVE</h2>
+<div class="wrap">
+  <div class="card">
 
-<div class="upload-box">
-  <input type="file" id="fileInput">
-  <br>
-  <button onclick="upload()">UPLOAD</button>
+    <header>
+      <div class="logo"><b>UP</b></div>
+      <div>
+        <h1>Upload ke Google Drive (Apps Script)</h1>
+        <p class="small">Upload otomatis ke folder Google Drive milik Anda.</p>
+      </div>
+    </header>
 
-  <div id="progressContainer">
-    <div id="progressBar"></div>
+    <section class="uploader">
+      <div>
+        <div id="drop" class="drop">
+          <svg width="64" height="64" fill="none" stroke="currentColor">
+            <path d="M12 3v10" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M8 7l4-4 4 4" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M21 15v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2"
+                  stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+
+          <div class="hint">
+            <div style="font-weight:700">Tarik & lepaskan file di sini</div>
+            <div class="small">atau gunakan tombol di bawah</div>
+
+            <div class="controls">
+              <label class="btn primary" for="fileInput">Pilih File</label>
+              <button class="btn" id="clearBtn">Bersihkan</button>
+              <input id="fileInput" type="file" multiple>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="side">
+        <strong>File dipilih</strong>
+        <p class="small">Daftar file yang akan diupload.</p>
+
+        <ul id="fileList" class="file-list"></ul>
+
+        <footer>
+          <span id="count">0 file</span>
+          <button id="uploadBtn" class="btn primary">Upload</button>
+        </footer>
+      </aside>
+    </section>
+
   </div>
-
-  <p id="status"></p>
 </div>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxLEM-UYmMsckunSp7x8Ax8RkawTs0cMAvTp3Wn2NpGj_ez8ZIuomSkz5OZGP4xDfuCBQ/exec"; // ganti di sini
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxLEM-UYmMsckunSp7x8Ax8RkawTs0cMAvTp3Wn2NpGj_ez8ZIuomSkz5OZGP4xDfuCBQ/exec";   // <== GANTI DI SINI
 
-async function upload(){
-  const file = document.getElementById("fileInput").files[0];
-  if(!file) return alert("Pilih file dulu!");
+let files = [];
+const drop = document.getElementById("drop");
+const fileInput = document.getElementById("fileInput");
+const fileList = document.getElementById("fileList");
+const clearBtn = document.getElementById("clearBtn");
+const uploadBtn = document.getElementById("uploadBtn");
+const count = document.getElementById("count");
 
-  const reader = new FileReader();
-
-  reader.onloadend = async () => {
-    const base64 = reader.result.split(",")[1];
-
-    // Munculkan progress bar
-    document.getElementById("progressContainer").style.display = "block";
-    document.getElementById("progressBar").style.width = "0%";
-    document.getElementById("status").innerText = "Menyiapkan upload...";
-
-    // Progress bar animasi loading (visual doang)
-    animateProgressBar();
-
-    const form = new URLSearchParams();
-    form.append("name", file.name);
-    form.append("type", file.type);
-    form.append("file", base64);
-
-    const res = await fetch(WEBAPP_URL, { method: "POST", body: form });
-    const result = await res.json();
-
-    if(result.status === "success"){
-      document.getElementById("status").innerHTML =
-        "✔ Upload selesai: <a href='" + result.fileUrl + "' target='_blank' style='color:#0f0'>Buka File</a>";
-      document.getElementById("progressBar").style.width = "100%";
-    } else {
-      document.getElementById("status").innerText = "❌ Error: " + result.message;
-      document.getElementById("progressBar").style.background = "red";
-    }
-  };
-
-  reader.readAsDataURL(file);
+function renderList(){
+  fileList.innerHTML = "";
+  files.forEach((f,i)=>{
+    let li = document.createElement("li");
+    li.className = "file-item";
+    li.innerHTML = `
+      <div>${f.name} <div class="small">${(f.size/1024).toFixed(1)} KB</div></div>
+      <button class="btn" onclick="removeFile(${i})">Hapus</button>
+    `;
+    fileList.appendChild(li);
+  });
+  count.textContent = files.length + " file";
 }
 
-// Animasi progress bar manual (biar keren)
-function animateProgressBar(){
-  let width = 0;
-  const bar = document.getElementById("progressBar");
+function removeFile(index){
+  files.splice(index,1);
+  renderList();
+}
 
-  const interval = setInterval(() => {
-    if (width >= 90) {  // Stop di 90% sampai upload selesai beneran
-      clearInterval(interval);
-    } else {
-      width += 2;
-      bar.style.width = width + "%";
-    }
-  }, 80);
+drop.addEventListener("click",()=> fileInput.click());
+fileInput.addEventListener("change",()=> {
+  [...fileInput.files].forEach(f => files.push(f));
+  renderList();
+});
+
+clearBtn.addEventListener("click",()=>{
+  files = [];
+  fileInput.value = "";
+  renderList();
+});
+
+["dragenter","dragover"].forEach(evt=>{
+  drop.addEventListener(evt, e=>{
+    e.preventDefault(); drop.classList.add("dragover");
+  });
+});
+["dragleave","drop"].forEach(evt=>{
+  drop.addEventListener(evt, e=>{
+    e.preventDefault(); drop.classList.remove("dragover");
+  });
+});
+drop.addEventListener("drop", e=>{
+  [...e.dataTransfer.files].forEach(f=>files.push(f));
+  renderList();
+});
+
+uploadBtn.addEventListener("click", uploadFiles);
+
+async function uploadFiles(){
+  if(files.length === 0){
+    alert("Belum ada file."); return;
+  }
+
+  for(const file of files){
+    const reader = new FileReader();
+
+    reader.onloadend = async () => {
+      const base64 = reader.result.split(",")[1];
+
+      const form = new URLSearchParams();
+      form.append("name", file.name);
+      form.append("type", file.type);
+      form.append("file", base64);
+
+      const res = await fetch(WEBAPP_URL, { method:"POST", body:form });
+      const result = await res.json();
+
+      console.log(result);
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  alert("Upload selesai! Cek Google Drive Anda.");
 }
 </script>
 
