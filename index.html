@@ -176,7 +176,7 @@
 </div>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx6OzjOCUa5FS_I3pwbkO-laKgQSM-GUX_-zVIMMH0fYhiN1pUz-VRnGHwnUE_ZDMQ4Fg/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwOhDJIgN1c7XPkK4uC5s29lFvy37vbcUbOl-4GGtMsR7ROdR4geFxnr7DstmsRGUcO2Q/exec";
 
 let files = [];
 const drop = document.getElementById("drop");
@@ -237,13 +237,19 @@ drop.addEventListener("drop", e=>{
 
 uploadBtn.addEventListener("click", uploadFiles);
 
-async function uploadFiles(){
-  if(files.length === 0){
-    alert("Belum ada file."); 
+async function uploadFiles() {
+  if (files.length === 0) {
+    alert("Belum ada file.");
     return;
   }
 
-  for (const file of files) {
+  const barContainer = document.getElementById("progressBarContainer");
+  const bar = document.getElementById("progressBar");
+
+  barContainer.style.display = "block";
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
     const base64 = await toBase64(file);
 
     const form = new URLSearchParams();
@@ -258,27 +264,34 @@ async function uploadFiles(){
     });
 
     const result = await res.json();
-    console.log(result);
-
     if (result.status !== "success") {
       alert("Gagal upload: " + result.message);
       return;
     }
+
+    // UPDATE PROGRESS
+    let progress = Math.round(((i + 1) / files.length) * 100);
+    bar.style.width = progress + "%";
   }
 
-  alert("Upload berhasil! Cek Google Drive.");
-}
-
-// helper
-function toBase64(file){
-  return new Promise((resolve) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result.split(",")[1]);
-    r.readAsDataURL(file);
-  });
+  alert("Upload berhasil!");
 }
 
 </script>
+<div id="progressBarContainer" style="
+  width:100%;
+  background:rgba(255,255,255,0.05);
+  height:10px;
+  border-radius:20px;
+  overflow:hidden;
+  margin-top:14px;
+  display:none;">
+  <div id="progressBar" style="
+    height:100%;
+    width:0%;
+    background:#1db954;
+    transition:0.3s;"></div>
+</div>
 
 </body>
 </html>
