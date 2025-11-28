@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Halaman Upload — GitHub Pages + Google Drive API</title>
-  <meta name="description" content="Halaman upload ke Google Drive menggunakan Google Identity Services (OAuth 2.0)" />
+  <title>Halaman Upload — Google Apps Script</title>
+
   <style>
     :root{ --bg:#000; --panel:#0b0b0b; --accent:#1db954; --muted:#9aa0a6; --glass: rgba(255,255,255,0.03); }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;color:#e6eef3;background:linear-gradient(180deg,#000 0%, #050505 100%);}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui;color:#e6eef3;background:#000}
 
     .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:48px}
-    .card{width:100%;max-width:920px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:28px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 6px 30px rgba(0,0,0,0.6)}
+    .card{width:100%;max-width:920px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:14px;padding:28px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 6px 30px rgba(0,0,0,0.6)}
 
     header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
-    .logo{width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#111,#0c0c0c);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.03)}
+    .logo{width:52px;height:52px;border-radius:10px;background:#0d0d0d;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.03)}
     .logo b{color:var(--accent);font-size:20px}
     h1{font-size:20px;margin:0}
     p.lead{margin:2px 0 0;color:var(--muted);font-size:13px}
@@ -23,256 +23,151 @@
 
     .drop{background:var(--glass);border-radius:8px;padding:20px;border:1px dashed rgba(255,255,255,0.06);min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .18s}
     .drop.dragover{border-color:var(--accent);transform:translateY(-4px)}
-    .drop .hint{color:var(--muted);text-align:center}
-
-    .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
-    .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 14px;border-radius:8px;color:#e6eef3;cursor:pointer;font-weight:600}
-    .btn.primary{background:linear-gradient(90deg, rgba(29,185,84,0.12), rgba(29,185,84,0.06));border-color:rgba(29,185,84,0.25)}
-    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);font-weight:500}
+    .controls{display:flex;gap:8px;margin-top:12px}
+    .btn{background:#111;border:1px solid rgba(255,255,255,0.08);padding:10px 14px;border-radius:8px;color:#e6eef3;cursor:pointer;font-weight:600}
+    .btn.primary{background:#0f0;border-color:#0f0;color:#000}
 
     input[type=file]{display:none}
 
-    .side{background:rgba(255,255,255,0.02);padding:16px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);min-height:220px}
+    .side{background:rgba(255,255,255,0.02);padding:16px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
     .file-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
-    .file-item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.02)}
-    .file-item .meta{flex:1}
+    .file-item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;background:#111;border:1px solid rgba(255,255,255,0.02)}
     .filename{font-weight:600}
     .filesize{font-size:12px;color:var(--muted)}
-    .small{font-size:12px;color:var(--muted)}
 
-    footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px}
-
-    .status{margin-top:12px;color:var(--muted);font-size:13px}
-
-    @media(max-width:880px){.uploader{grid-template-columns:1fr;}.side{order:2}}
+    footer{margin-top:12px;display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card" role="main">
-      <header>
-        <div class="logo" aria-hidden><b>GH</b></div>
-        <div>
-          <h1>Upload ke Google Drive (OAuth)</h1>
-          <p class="lead">Untuk upload otomatis ke folder Drive yang kamu sediakan. Perlu konfigurasi OAuth di Google Cloud Console.</p>
-        </div>
-      </header>
+<div class="wrap">
+  <div class="card">
 
-      <section class="uploader">
-        <div>
-          <div id="drop" class="drop" tabindex="0" aria-label="Area unggah file">
-            <div>
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path d="M12 3v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M8 7l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M21 15v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="hint">
-              <div style="margin-top:8px;font-weight:700">Tarik & lepaskan file di sini</div>
-              <div class="small">atau gunakan tombol <strong>Upload</strong></div>
-              <div class="controls">
-                <label class="btn primary" for="fileInput">Pilih File</label>
-                <button class="btn ghost" id="clearBtn">Bersihkan</button>
-                <input id="fileInput" type="file" multiple />
-              </div>
-            </div>
+    <header>
+      <div class="logo"><b>UP</b></div>
+      <div>
+        <h1>Upload ke Google Drive</h1>
+        <p class="lead">Backend: Google Apps Script Web App</p>
+      </div>
+    </header>
+
+    <section class="uploader">
+      <div>
+        <div id="drop" class="drop">
+          <svg width="64" height="64" fill="none" stroke="#fff" stroke-width="1.5">
+            <path d="M12 3v10"/><path d="M8 7l4-4 4 4"/><path d="M21 15v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2"/>
+          </svg>
+          <div class="controls">
+            <label class="btn primary" for="fileInput">Pilih File</label>
+            <button class="btn" id="clearBtn">Bersihkan</button>
           </div>
+          <input id="fileInput" type="file" multiple />
         </div>
+      </div>
 
-        <aside class="side" aria-live="polite">
-          <strong>File dipilih</strong>
-          <p class="small">Daftar file yang akan diunggah.</p>
-          <ul id="fileList" class="file-list" aria-hidden="false"></ul>
+      <aside class="side">
+        <strong>File Dipilih</strong>
+        <ul id="fileList" class="file-list"></ul>
 
-          <div class="status" id="authStatus">Status: belum login</div>
+        <footer>
+          <span id="count">0 file</span>
+          <button class="btn primary" id="uploadBtn">Upload</button>
+        </footer>
+      </aside>
+    </section>
 
-          <footer>
-            <span id="count">0 file</span>
-            <div style="display:flex;gap:8px">
-              <button id="signinBtn" class="btn">Masuk (OAuth)</button>
-              <button id="driveUpload" class="btn primary">Upload ke Folder Drive</button>
-            </div>
-          </footer>
-        </aside>
-      </section>
-
-      <section style="margin-top:16px;color:var(--muted);font-size:13px">
-        <strong>Instruksi singkat:</strong>
-        <ol>
-          <li>Buat OAuth 2.0 Client ID (Tipe: Web) di Google Cloud Console dan tambahkan origin halaman GitHub Pages kamu ke <em>Authorized JavaScript origins</em>. (Contoh: <code>https://your-username.github.io</code>).</li>
-          <li>Aktifkan Google Drive API di project yang sama.</li>
-          <li>Ganti <code>CLIENT_ID</code> dan <code>FOLDER_ID</code> di skrip di bawah dengan milikmu.</li>
-        </ol>
-      </section>
-
-    </div>
   </div>
+</div>
 
-  <!-- Google Identity Services untuk mendapatkan access token -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+const WEBAPP_URL = "PASTE_WEB_APP_URL_DI_SINI"; // ← GANTI INI
 
-  <script>
-    // === GANTI nilai-nilai ini ===
-    const CLIENT_ID = 'REPLACE_WITH_YOUR_CLIENT_ID.apps.googleusercontent.com';
-    const FOLDER_ID = '1OHKzoW7awz1f-k5Wih0FmAVs2lG6Eaoc'; // folder yang kamu berikan
-    // ============================
+let files = [];
+const drop = document.getElementById("drop");
+const fileInput = document.getElementById("fileInput");
+const fileList = document.getElementById("fileList");
+const clearBtn = document.getElementById("clearBtn");
+const uploadBtn = document.getElementById("uploadBtn");
+const count = document.getElementById("count");
 
-    // SCOPE: gunakan drive.file (lebih terbatas) atau drive untuk akses penuh
-    const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+function renderList(){
+  fileList.innerHTML = "";
+  files.forEach((f,i)=>{
+    let li = document.createElement("li");
+    li.className = "file-item";
+    li.innerHTML = `
+      <div class="meta">
+        <div class="filename">${f.name}</div>
+        <div class="filesize">${(f.size/1024).toFixed(1)} KB</div>
+      </div>
+      <button class="btn" onclick="removeFile(${i})">Hapus</button>
+    `;
+    fileList.appendChild(li);
+  });
+  count.innerText = files.length + " file";
+}
 
-    const drop = document.getElementById('drop');
-    const fileInput = document.getElementById('fileInput');
-    const fileList = document.getElementById('fileList');
-    const clearBtn = document.getElementById('clearBtn');
-    const driveBtn = document.getElementById('driveUpload');
-    const signinBtn = document.getElementById('signinBtn');
-    const authStatus = document.getElementById('authStatus');
-    const count = document.getElementById('count');
+function removeFile(i){
+  files.splice(i,1);
+  renderList();
+}
 
-    let files = [];
-    let tokenClient;
-    let accessToken = null;
+fileInput.onchange = () => {
+  files.push(...fileInput.files);
+  renderList();
+};
 
-    function humanFileSize(size) {
-      if (size === 0) return '0 B';
-      const i = Math.floor(Math.log(size) / Math.log(1024));
-      return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B','KB','MB','GB','TB'][i];
-    }
+clearBtn.onclick = () => {
+  files = [];
+  renderList();
+};
 
-    function renderList(){
-      fileList.innerHTML = '';
-      files.forEach((f, idx) => {
-        const li = document.createElement('li');
-        li.className = 'file-item';
-        li.innerHTML = `
-          <div class="meta">
-            <div class="filename">${escapeHtml(f.name)}</div>
-            <div class="filesize">${humanFileSize(f.size)}</div>
-          </div>
-          <div>
-            <button class="btn" data-idx="${idx}">Hapus</button>
-          </div>
-        `;
-        fileList.appendChild(li);
-      });
-      count.textContent = files.length + ' file';
-    }
+["dragover","dragenter"].forEach(evt=>{
+  drop.addEventListener(evt,e=>{
+    e.preventDefault();
+    drop.classList.add("dragover");
+  });
+});
 
-    function escapeHtml(text) { return text.replace(/[&<>\"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+["dragleave","drop"].forEach(evt=>{
+  drop.addEventListener(evt,e=>{
+    e.preventDefault();
+    drop.classList.remove("dragover");
+  });
+});
 
-    drop.addEventListener('click', ()=> fileInput.click());
-    fileInput.addEventListener('change', (e)=> addFiles(Array.from(e.target.files)));
-    fileList.addEventListener('click', (e)=>{ if(e.target.tagName === 'BUTTON'){ const idx = Number(e.target.dataset.idx); files.splice(idx,1); renderList(); } });
-    clearBtn.addEventListener('click', ()=>{ files = []; renderList(); fileInput.value = ''; });
+drop.addEventListener("drop",e=>{
+  e.preventDefault();
+  files.push(...e.dataTransfer.files);
+  renderList();
+});
 
-    function addFiles(selected){ selected.forEach(f => files.push(f)); renderList(); }
+uploadBtn.onclick = async () => {
+  if(files.length === 0){
+    alert("Pilih file terlebih dahulu");
+    return;
+  }
 
-    ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, (e)=>{ e.preventDefault(); e.stopPropagation(); drop.classList.add('dragover'); }));
-    ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, (e)=>{ e.preventDefault(); e.stopPropagation(); drop.classList.remove('dragover'); }));
-    drop.addEventListener('drop', (e)=>{ const dt = e.dataTransfer; if(dt && dt.files && dt.files.length){ addFiles(Array.from(dt.files)); } });
-    drop.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') fileInput.click(); });
-
-    // --- Google Identity Services: setup token client ---
-    function initGis(){
-      if(!CLIENT_ID || CLIENT_ID.includes('REPLACE_WITH')){
-        authStatus.textContent = 'Status: ERROR — masukkan CLIENT_ID di skrip.';
-        return;
-      }
-
-      tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: (resp) => {
-          if(resp.error){
-            console.error('TokenError', resp);
-            authStatus.textContent = 'Status: gagal mendapatkan token.';
-            return;
-          }
-          accessToken = resp.access_token;
-          authStatus.textContent = 'Status: terhubung (token aktif)';
-        }
-      });
-
-      // update UI
-      authStatus.textContent = 'Status: siap (belum terautentikasi)';
-    }
-
-    // sign-in (request token)
-    signinBtn.addEventListener('click', ()=>{
-      if(!tokenClient){ initGis(); }
-      tokenClient.requestAccessToken(); // akan menampilkan popup dan meminta izin
+  for(const file of files){
+    let base64 = await new Promise(res=>{
+      let r = new FileReader();
+      r.onload = ()=> res(r.result.split(",")[1]);
+      r.readAsDataURL(file);
     });
 
-    // upload tiap file ke folder yang ditentukan
-    async function uploadFilesToDrive(){
-      if(!accessToken){ alert('Belum login. Tekan "Masuk (OAuth)" terlebih dahulu.'); return; }
-      if(files.length === 0){ alert('Belum ada file yang dipilih.'); return; }
+    let form = new URLSearchParams();
+    form.append("name", file.name);
+    form.append("type", file.type);
+    form.append("file", base64);
 
-      for(const file of files){
-        try{
-          authStatus.textContent = `Mengunggah ${file.name} ...`;
-          const metadata = { name: file.name, parents: [FOLDER_ID] };
-
-          const form = new FormData();
-          const boundary = '-------314159265358979323846';
-
-          const init = new Blob([
-            `--${boundary}
-Content-Type: application/json; charset=UTF-8
-
-${JSON.stringify(metadata)}
-`,
-            `--${boundary}
-Content-Type: ${file.type || 'application/octet-stream'}
-
-`
-          ]);
-
-          // build multipart body using blob parts
-          const body = new Blob([init, file, `
---${boundary}--`]);
-
-          const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
-            method: 'POST',
-            headers: {
-              'Authorization': 'Bearer ' + accessToken,
-              'Content-Type': 'multipart/related; boundary="' + boundary + '"'
-            },
-            body: body
-          });
-
-          if(!res.ok){
-            const err = await res.json().catch(()=>({error:'unknown'}));
-            console.error('UploadError', err);
-            alert('Gagal mengunggah: ' + file.name + '
-' + JSON.stringify(err));
-            authStatus.textContent = 'Status: terjadi kesalahan saat mengunggah.';
-            continue;
-          }
-
-          const j = await res.json();
-          console.log('Uploaded', file.name, j);
-          authStatus.textContent = `Selesai: ${file.name}`;
-        }catch(err){
-          console.error(err);
-          alert('Kesalahan saat mengunggah: ' + file.name);
-          authStatus.textContent = 'Status: error pada proses upload.';
-        }
-      }
-
-      alert('Semua file diproses. Periksa Google Drive kamu.');
-    }
-
-    driveBtn.addEventListener('click', uploadFilesToDrive);
-
-    // init GIS when library ready
-    window.addEventListener('load', ()=>{
-      // wait a short time for gsi script to initialize
-      setTimeout(()=>{
-        if(window.google && google.accounts && google.accounts.oauth2){ initGis(); }
-      }, 600);
+    await fetch(WEBAPP_URL, {
+      method:"POST",
+      body:form
     });
-  </script>
+  }
+
+  alert("Upload selesai!");
+};
+</script>
+
 </body>
 </html>
