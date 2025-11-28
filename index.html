@@ -19,10 +19,7 @@
 <p id="status"></p>
 
 <script>
-// =======================
-// GANTI DENGAN WEB APP URL KAMU
-// =======================
-const WEBAPP_URL = "PASTE_WEB_APP_URL_DISINI"; 
+const WEBAPP_URL = "PASTE_WEB_APP_URL_DI_SINI"; // <- ganti
 
 async function upload(){
   const file = document.getElementById("fileInput").files[0];
@@ -39,9 +36,12 @@ async function upload(){
 
     document.getElementById("status").innerText = "Uploading...";
 
-    const res = await fetch(WEBAPP_URL, { method: "POST", body: form });
-    const result = await res.json();
+    const res = await fetch(WEBAPP_URL, {
+      method: "POST",
+      body: form
+    });
 
+    const result = await res.json();
     if(result.status === "success"){
       document.getElementById("status").innerHTML =
         "✔ Uploaded: <a href='" + result.fileUrl + "' target='_blank'>Buka File</a>";
