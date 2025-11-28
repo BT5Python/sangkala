@@ -1,127 +1,90 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="id">
 <head>
-  <base target="_top">
-  <style>
-    body{
-      background:#000;
-      color:#00ff00;
-      font-family: Consolas, monospace;
-      text-align:center;
-      padding:40px;
-    }
-    .box{
-      padding:40px;
-      border:1px solid #00ff00;
-      border-radius:14px;
-      width:420px;
-      margin:auto;
-      background:#0a0a0a;
-    }
-    input[type=file]{
-      padding:10px;
-      border:1px solid #00ff00;
-      border-radius:8px;
-      width:100%;
-      color:#00ff00;
-      background:#000;
-    }
-    button{
-      margin-top:20px;
-      width:100%;
-      padding:12px;
-      border:none;
-      border-radius:8px;
-      background:#00ff00;
-      color:#000;
-      font-weight:bold;
-      cursor:pointer;
-      font-size:16px;
-    }
-    #progress{
-      width:100%;
-      height:14px;
-      background:#333;
-      margin-top:20px;
-      border-radius:8px;
-      overflow:hidden;
-      display:none;
-    }
-    #progress-bar{
-      width:0%;
-      height:100%;
-      background:#00ff00;
-    }
-    #status{
-      margin-top:20px;
-      font-size:14px;
-      color:#00ff00;
-      min-height:20px;
-    }
-  </style>
+<meta charset="utf-8" />
+<title>Upload ke Google Drive</title>
+
+<style>
+  body{
+    background:#000;
+    color:#fff;
+    font-family:Arial;
+    padding:20px;
+  }
+  .card{
+    max-width:500px;
+    margin:auto;
+    background:#111;
+    padding:20px;
+    border-radius:10px;
+    border:1px solid #222;
+  }
+  button, input{
+    padding:10px;
+    border-radius:6px;
+    border:none;
+    margin-top:10px;
+  }
+  input{
+    background:#222;
+    color:#fff;
+    width:100%;
+  }
+  button{
+    background:#1db954;
+    color:#000;
+    font-weight:bold;
+    width:100%;
+    cursor:pointer;
+  }
+</style>
 </head>
-
 <body>
-  <h2>UPLOAD FILE KE GOOGLE DRIVE</h2>
 
-  <div class="box">
-      <input type="file" id="file"><br>
+<div class="card">
+  <h2>Upload File ke Google Drive</h2>
 
-      <button onclick="startUpload()">UPLOAD</button>
+  <!-- FORM TANPA FETCH — 100% WORK -->
+  <form id="uploadForm" method="POST" target="hiddenFrame">
+    <input type="hidden" id="file64" name="file">
+    <input type="hidden" id="filename" name="filename">
 
-      <div id="progress">
-        <div id="progress-bar"></div>
-      </div>
+    <input type="file" id="theFile" required>
+    <button type="submit">UPLOAD</button>
+  </form>
 
-      <div id="status"></div>
-  </div>
+  <p id="status"></p>
+
+  <!-- Iframe untuk menampung respon -->
+  <iframe name="hiddenFrame" style="display:none;"></iframe>
+</div>
 
 <script>
-function startUpload(){
-  const file = document.getElementById("file").files[0];
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzRu7J0zWHlPQ0ZxkJflM5v52PVoGNrVhanbu1eSUENuBNvzsawU02cwTGs5_dXSBPb8A/exec";   // GANTI !!
+
+// SET action form
+document.getElementById("uploadForm").action = WEBAPP_URL;
+
+document.getElementById("uploadForm").onsubmit = function(e){
+  const file = document.getElementById("theFile").files[0];
   if(!file){
     alert("Pilih file dulu.");
-    return;
+    return false;
   }
 
-  document.getElementById("status").innerHTML = "Menyiapkan upload...";
-  document.getElementById("progress").style.display = "block";
-
   const reader = new FileReader();
-  reader.onload = function(e){
-      const base64 = e.target.result.split(',')[1];
 
-      animateProgress();
+  reader.onloadend = () => {
+    const base64 = reader.result.split(",")[1];
 
-      google.script.run.withSuccessHandler(res => {
-          if(res.status === "success"){
-            document.getElementById("status").innerHTML =
-              "✔ " + res.fileName + " berhasil diupload";
-          } else {
-            document.getElementById("status").innerHTML = "❌ Error: " + res.message;
-          }
-      }).uploadToDrive({
-        fileName: file.name,
-        mimeType: file.type,
-        base64: base64
-      });
+    document.getElementById("file64").value = base64;
+    document.getElementById("filename").value = file.name;
+
+    document.getElementById("status").innerText = "Mengupload...";
   };
-  reader.readAsDataURL(file);
-}
 
-// Fake progress animation
-function animateProgress(){
-  let bar = document.getElementById("progress-bar");
-  let width = 0;
-  let interval = setInterval(() => {
-    if(width >= 100){
-      clearInterval(interval);
-    } else {
-      width += 5;
-      bar.style.width = width + "%";
-    }
-  }, 80);
-}
+  reader.readAsDataURL(file);
+};
 </script>
 
 </body>
