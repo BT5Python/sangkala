@@ -174,7 +174,13 @@ function removeFile(index){
   renderList();
 }
 
-drop.addEventListener("click",()=> fileInput.click());
+// klik hanya jika klik langsung pada background, bukan pada tombol
+drop.addEventListener("click", e => {
+  if (e.target === drop) {
+    fileInput.click();
+  }
+});
+
 fileInput.addEventListener("change",()=> {
   [...fileInput.files].forEach(f => files.push(f));
   renderList();
