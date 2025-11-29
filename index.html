@@ -3,20 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Upload ke Google Drive — GitHub Pages</title>
+<title>Upload ke Google Drive</title>
 <style>
 :root{--bg:#000;--accent:#00ff00;--muted:#9aa0a6;--glass: rgba(255,255,255,0.03);}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:Inter,sans-serif;background:linear-gradient(180deg,#000,#050505);color:#00ff00}
 .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:40px}
-.card{width:100%;max-width:900px;background:var(--glass);border:1px solid rgba(255,255,255,0.05);border-radius:14px;padding:26px;box-shadow:0 6px 30px rgba(0,0,0,0.6)}
+.card{width:100%;max-width:700px;background:var(--glass);border:1px solid rgba(255,255,255,0.05);border-radius:14px;padding:26px;box-shadow:0 6px 30px rgba(0,0,0,0.6)}
 header{display:flex;align-items:center;gap:14px;margin-bottom:16px}
 .logo{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#0d0d0d;border:1px solid rgba(255,255,255,0.05)}
 .logo b{color:var(--accent);font-size:20px}
 h1{margin:0;font-size:20px}
-.uploader{display:grid;grid-template-columns:1fr 300px;gap:20px}
+.uploader{display:grid;grid-template-columns:1fr 250px;gap:20px}
 @media(max-width:850px){.uploader{grid-template-columns:1fr}}
-.drop{background:rgba(255,255,255,0.03);border-radius:10px;border:1px dashed rgba(255,255,255,0.08);padding:22px;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:.2s;cursor:pointer}
+.drop{background:rgba(255,255,255,0.03);border-radius:10px;border:1px dashed rgba(255,255,255,0.08);padding:22px;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:.2s;cursor:pointer}
 .drop.dragover{border-color:var(--accent);transform:translateY(-4px)}
 .hint{color:var(--muted);text-align:center;margin-top:8px}
 .controls{display:flex;gap:10px;margin-top:10px}
@@ -28,10 +28,6 @@ input[type=file]{display:none}
 .file-item{padding:8px;border-radius:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.03);display:flex;justify-content:space-between;align-items:center}
 .small{font-size:12px;color:#00ff00}
 footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;color:#00ff00;font-size:13px}
-/* RUNNING TEXT */
-.running-text{width:100%;overflow:hidden;white-space:nowrap;border-bottom:1px solid rgba(255,0,0,0.3);margin-bottom:14px;padding:6px 0}
-.running-text span{display:inline-block;padding-left:100%;color:#ff3333;font-weight:700;animation:marquee 12s linear infinite;letter-spacing:1px}
-@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 #progressBarContainer{width:100%;background:rgba(255,255,255,0.05);height:10px;border-radius:20px;overflow:hidden;margin-top:14px;display:none}
 #progressBar{height:100%;width:0%;background:#00ff00;transition:0.3s}
 .folder-select{margin-bottom:12px}
@@ -42,37 +38,26 @@ footer{margin-top:16px;display:flex;justify-content:space-between;align-items:ce
 <div class="wrap">
   <div class="card">
 
-    <div class="running-text">
-      <span>PERHATIAN: PASTIKAN FILE YANG DIUPLOAD SESUAI FORMAT DAN TIDAK MELEBIHI BATAS!</span>
-    </div>
-
     <header>
       <div class="logo"><b>UP</b></div>
       <div>
         <h2 style="color:#00ff00; margin:4px 0 0 0; font-weight:600;">PUSLAT KODIKLATAU</h2>
-        <h1>PROGAR PUSLAT KODIKLATAU</h1>        
-        <p class="small">TOR - RENPROGJA - PROGJA - RENLAKGIAT - LAP. EVALUASI SEMESTER I / AKHIR TAHUN</p>
+        <h1>Upload File ke Folder Drive</h1>        
       </div>
-   </header>
+    </header>
 
     <section class="uploader">
       <div>
-        <!-- Pilihan Folder -->
+        <!-- Dropdown folder -->
         <div class="folder-select">
           <label for="folderSelect" style="font-weight:700;">Pilih Folder:</label>
           <select id="folderSelect">
-            <option value="1OHKzoW7awz1f-k5Wih0FmAVs2lG6Eaoc">Folder PROGAR</option>
-            <option value="1AbCdEfGhIjKlMnOpQrStUvWxYz">Folder LAPORAN</option>
-            <!-- Bisa tambah folder lain -->
+            <option value="1E4hjEuAVorv1Yj0SUQpm3h4tewm97Hts">Folder Default</option>
+            <option value="1AbCdEfGhIjKlMnOpQrStUvWxYz">Folder Lain</option>
           </select>
         </div>
 
         <div id="drop" class="drop">
-          <svg width="64" height="64" fill="none" stroke="currentColor">
-            <path d="M12 3v10" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M8 7l4-4 4 4" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M21 15v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
           <div class="hint">
             <div style="font-weight:700; color: #00ff00">Tarik & lepaskan file di sini</div>
             <div class="small">atau gunakan tombol di bawah</div>
@@ -104,7 +89,7 @@ footer{margin-top:16px;display:flex;justify-content:space-between;align-items:ce
 </div>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwG5JhGCygFcWM8i81yHfK5Owj2NbQVXVQhEunL2kuhihV_hafzvpvakvzonmzORHfH/exec"; // ganti dengan URL Apps Script kamu
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyNf4TGK6oEbpZaEgfQSu0nItEM2KizGvD0Vze6FJN6Us0JAmd0Akv9d5SpL1rh0o3xkQ/exec"; // ganti dengan URL Web App
 
 let files = [];
 const drop = document.getElementById("drop");
@@ -134,7 +119,6 @@ function removeFile(index){ files.splice(index,1); renderList(); }
 drop.addEventListener("click", e=>{ if(e.target===drop) fileInput.click(); });
 fileInput.addEventListener("change", ()=>{ [...fileInput.files].forEach(f=>files.push(f)); renderList(); });
 clearBtn.addEventListener("click", ()=>{ files=[]; fileInput.value=""; renderList(); });
-
 ["dragenter","dragover"].forEach(evt=>drop.addEventListener(evt,e=>{e.preventDefault();drop.classList.add("dragover");}));
 ["dragleave","drop"].forEach(evt=>drop.addEventListener(evt,e=>{e.preventDefault();drop.classList.remove("dragover");}));
 drop.addEventListener("drop", e=>{ [...e.dataTransfer.files].forEach(f=>files.push(f)); renderList(); });
@@ -152,8 +136,8 @@ uploadBtn.addEventListener("click", async ()=>{
   if(files.length===0){ alert("Belum ada file."); return; }
 
   const folderId = folderSelect.value;
-
   barContainer.style.display="block";
+
   for(let i=0;i<files.length;i++){
     const file=files[i];
     const base64=await toBase64(file);
@@ -161,7 +145,8 @@ uploadBtn.addEventListener("click", async ()=>{
     form.append("name",file.name);
     form.append("type",file.type);
     form.append("file",base64.split(',')[1]);
-    form.append("folderId", folderId); // kirim folderId ke Apps Script
+    form.append("folderId", folderId);
+
     try{
       const res=await fetch(WEBAPP_URL,{
         method:"POST",
@@ -173,6 +158,7 @@ uploadBtn.addEventListener("click", async ()=>{
       bar.style.width = Math.round(((i+1)/files.length)*100)+"%";
     } catch(err){ alert("Gagal upload: "+err.message); return; }
   }
+
   alert("Upload berhasil!");
   files=[]; fileInput.value=""; renderList();
   bar.style.width="0%";
