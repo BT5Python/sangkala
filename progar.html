@@ -184,6 +184,30 @@ document.addEventListener("click", function() {
   forceFullscreen();
 }, { once: true });
 </script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyC7SkdwajJl6pzXehN6zpeycNfT5ZHFXP4",
+  authDomain: "portalmonitoring-a0926.firebaseapp.com",
+  databaseURL: "https://portalmonitoring-a0926-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId: "portalmonitoring-a0926",
+  storageBucket: "portalmonitoring-a0926.appspot.com",
+  messagingSenderId: "27756738323",
+  appId: "1:27756738323:web:010277cc1eb9b7cdfa97cd"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+function heartbeat(){
+    set(ref(db, "pages/BT5Python/p120G412"), {
+        lastSeen: Date.now()
+    });
+}
+
+setInterval(heartbeat, 2000);
+</script>
 
 </body>
 </html>
